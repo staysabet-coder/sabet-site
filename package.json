@@ -1,8 +1,9 @@
 {
   "name": "sabet-awareness-site",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
+  "engines": { "node": ">=18" },
   "scripts": {
     "dev": "node server.js",
     "build": "node scripts/build.js",

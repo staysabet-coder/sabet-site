@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');
-
 :root {
   color-scheme: light;
   --ink: #101718;
@@ -180,7 +178,7 @@ h1 em, h2 em { color: var(--orange); font-style: normal; }
 .card-bottom { margin-top: auto; padding-top: 13px; display: flex; justify-content: space-between; align-items: center; gap: 16px; border-top: 1px solid rgba(16,23,24,.1); position: relative; z-index: 1; }
 .card-brand { display: flex; align-items: center; gap: 8px; color: #7a837e; font-size: 9px; line-height: 1.5; font-weight: 700; }
 .card-brand b { color: var(--ink); }
-.mini-mark { display: grid; place-items: center; width: 58px; height: 36px; flex: 0 0 58px; background: var(--ink) url('/manus-storage/sabet-wordmark_d18f80c3.png') center / contain no-repeat; color: transparent; border: 1px solid var(--orange); border-radius: 4px; font-size: 0; }
+.mini-mark { display: grid; place-items: center; width: 58px; height: 36px; flex: 0 0 58px; background: var(--ink) url('/assets/sabet-wordmark.png') center / contain no-repeat; color: transparent; border: 1px solid var(--orange); border-radius: 4px; font-size: 0; }
 .card-bottom .button { min-height: 39px; padding: 8px 15px; font-size: 11px; }
 .card-back .card-bottom { border-color: rgba(255,255,255,.14); }
 .card-back .card-brand { color: rgba(255,255,255,.55); }
@@ -346,4 +344,24 @@ noscript { display: block; padding: 20px; text-align: center; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+}
+
+/* الوجه المخفي لا يستقبل ضغطات ولا تركيز لوحة المفاتيح */
+.card-front, .card-back { transition: visibility 0s linear .36s; }
+.card-back { visibility: hidden; pointer-events: none; }
+.flip-scene.is-flipped .card-back { visibility: visible; pointer-events: auto; }
+.flip-scene.is-flipped .card-front { visibility: hidden; pointer-events: none; }
+
+/* خط المساعدة */
+.help-strip { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 22px clamp(20px, 5.6vw, 88px); background: var(--paper-deep); border-top: 1px solid var(--line); border-bottom: 5px solid var(--orange); }
+.help-text { display: flex; flex-direction: column; gap: 2px; }
+.help-kicker { color: var(--orange); font-weight: 900; font-size: 15px; }
+.help-text p { margin: 0; color: var(--ink-soft); font-size: 13px; line-height: 1.7; }
+.help-call { display: inline-flex; align-items: center; gap: 12px; flex: 0 0 auto; background: var(--ink); color: #fff; border-radius: 999px; padding: 8px 24px 8px 10px; transition: transform .2s ease, background .2s ease; }
+.help-call:hover { transform: translateY(-2px); background: var(--ink-soft); }
+.help-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: var(--gold); color: var(--ink); font-size: 20px; }
+.help-call strong { font-size: 26px; font-weight: 900; letter-spacing: .06em; line-height: 1; }
+@media (max-width: 640px) {
+  .help-strip { flex-direction: column; align-items: stretch; gap: 14px; padding: 20px 18px; text-align: center; }
+  .help-call { justify-content: center; }
 }
