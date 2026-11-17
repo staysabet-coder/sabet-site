@@ -1,12 +1,33 @@
-import { cards } from './cards.js';
+import { cards as sourceCards } from './cards.js';
+import { pillars } from './pillars.js';
 
 const app = document.querySelector('#app');
+
+// يخلط اختيارات أسئلة الاختيار من متعدد والمواقف، ويترك «حقيقة / خرافة» بترتيبها الثابت
+function shuffle(list) {
+  const copy = [...list];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function buildDeck() {
+  return sourceCards.map((card) => {
+    if (card.kind === 'truth') return { ...card };
+    const order = shuffle(card.options.map((_, index) => index));
+    return { ...card, options: order.map((i) => card.options[i]), correctIndex: order.indexOf(card.correctIndex) };
+  });
+}
+
+let cards = buildDeck();
 const socialLinks = [
   { label: 'فيسبوك', href: 'https://www.facebook.com/share/1DXohQ5CNF/', mark: 'f' },
   { label: 'تيك توك', href: 'https://tiktok.com/@sabet_awareness', mark: '♪' }
 ];
 
-const logo = '<img class="brand-logo" src="/manus-storage/sabet-logo_ceb55bed.png" alt="شعار حملة ثابت" />';
+const logo = '<img class="brand-logo" src="/assets/sabet-logo.png" alt="شعار حملة ثابت" />';
 
 function header() {
   const active = window.location.pathname;
@@ -26,6 +47,14 @@ function header() {
     </header>`;
 }
 
+function helpStrip() {
+  return `
+    <aside class="help-strip" aria-label="خط المساعدة">
+      <div class="help-text"><span class="help-kicker">محتاج مساعدة؟ أو قلقان على حد؟</span><p>الخط الساخن الرسمي لعلاج الإدمان التابع لصندوق مكافحة وعلاج الإدمان والتعاطي.</p></div>
+      <a class="help-call" href="tel:16023" aria-label="اتصل بالخط الساخن لعلاج الإدمان 16023"><span class="help-icon" aria-hidden="true">✆</span><strong dir="ltr">16023</strong></a>
+    </aside>`;
+}
+
 function socialFooter() {
   return `
     <footer class="site-footer">
@@ -35,6 +64,31 @@ function socialFooter() {
         ${socialLinks.map(link => `<a href="${link.href}" target="_blank" rel="noreferrer" aria-label="تابعنا على ${link.label}"><span aria-hidden="true">${link.mark}</span>${link.label}</a>`).join('')}
       </div>
     </footer>`;
+}
+
+function pillarMarkup(pillar) {
+  const panelId = `pillar-panel-${pillar.id}`;
+  const points = pillar.points.map(([title, text]) => `<li><b>${title}:</b> ${text}</li>`).join('');
+  const hotline = pillar.hotline
+    ? `<p class="panel-hotline">محتاج مساعدة أو قلقان على حد؟ اتصل بالخط الساخن لعلاج الإدمان: <a href="tel:16023" dir="ltr">16023</a></p>`
+    : '';
+  return `
+    <article class="pillar" data-pillar="${pillar.id}">
+      <button class="pillar-toggle" type="button" aria-expanded="false" aria-controls="${panelId}" id="${panelId}-btn">
+        <span class="pillar-number">${pillar.number}</span><span class="pillar-icon ${pillar.icon}" aria-hidden="true">${pillar.symbol}</span>
+        <span class="pillar-text"><span class="pillar-name">${pillar.name}</span><span class="pillar-teaser">${pillar.teaser}</span></span><span class="pillar-arrow" aria-hidden="true">↙</span>
+      </button>
+      <div class="pillar-panel" id="${panelId}" role="region" aria-labelledby="${panelId}-btn" hidden>
+        <div class="panel-inner">
+          <span class="panel-kicker">${pillar.number}. ${pillar.name}</span>
+          <h4>${pillar.heading}</h4>
+          <p class="panel-intro">${pillar.intro}</p>
+          <ul class="panel-points">${points}</ul>
+          <div class="panel-good"><span>الخبر السار</span><p>${pillar.good}</p></div>
+          ${hotline}
+        </div>
+      </div>
+    </article>`;
 }
 
 function homePage() {
@@ -69,11 +123,7 @@ function homePage() {
           <div><span class="section-kicker">الصورة كاملة</span><h2 id="pillars-title">افهم. اسأل. <em>اختار.</em></h2></div>
           <p>معلومات واضحة تساعدك تشوف التأثير الحقيقي بعيدًا عن الشائعات.</p>
         </div>
-        <div class="pillar-list">
-          <article class="pillar"><span class="pillar-number">01</span><span class="pillar-icon icon-smoke" aria-hidden="true">〰</span><div><h3>التدخين</h3><p>مش تأثيره على الرئتين بس. افهم أثره على صحتك وجسمك.</p></div><span class="pillar-arrow">↙</span></article>
-          <article class="pillar"><span class="pillar-number">02</span><span class="pillar-icon icon-vape" aria-hidden="true">◉</span><div><h3>الفيب</h3><p>النكهة الحلوة مش معناها إن المنتج آمن.</p></div><span class="pillar-arrow">↙</span></article>
-          <article class="pillar"><span class="pillar-number">03</span><span class="pillar-icon icon-awareness" aria-hidden="true">✳</span><div><h3>المخدرات التخليقية</h3><p>المظهر مش كفاية تعرف بيه مكونات مادة أو خطورتها.</p></div><span class="pillar-arrow">↙</span></article>
-        </div>
+        <div class="pillar-list">${pillars.map(pillarMarkup).join('')}</div>
       </section>
 
       <section class="quiz-invite section-wrap">
@@ -110,7 +160,13 @@ function aboutPage() {
     </main>`;
 }
 
-let quiz = { index: 0, selected: null, answered: false, score: 0, answers: [] };
+const freshQuiz = () => ({ index: 0, selected: null, answered: false, flipPending: false, score: 0, answers: [] });
+let quiz = freshQuiz();
+
+function resetQuiz() {
+  cards = buildDeck();
+  quiz = freshQuiz();
+}
 
 function progressMarkup() {
   return `<div class="progress-head"><span>البطاقة <b>${quiz.index + 1}</b> <i>من</i> ${cards.length}</span><span>${Math.round((quiz.index / cards.length) * 100)}٪</span></div><div class="progress-track" role="progressbar" aria-label="التقدم في البطاقات" aria-valuemin="0" aria-valuemax="${cards.length}" aria-valuenow="${quiz.index}"><span style="width:${(quiz.index / cards.length) * 100}%"></span></div>`;
@@ -126,7 +182,7 @@ function cardMarkup(card) {
     <main class="page page-cards section-wrap">
       <div class="cards-heading"><div><span class="section-kicker">خد وقتك واختار</span><h1>اختبر <em>معلوماتك</em></h1></div><a class="back-link" href="/">← الرئيسية</a></div>
       <div class="quiz-progress">${progressMarkup()}</div>
-      <div class="flip-scene ${quiz.answered ? 'is-flipped' : ''}" aria-live="polite">
+      <div class="flip-scene ${quiz.answered && !quiz.flipPending ? 'is-flipped' : ''}" aria-live="polite">
         <div class="flip-card">
           <article class="card-face card-front">
             <div class="card-topline"><span class="category-chip"><i></i>${card.category}</span><span class="card-number">${String(card.id).padStart(2, '0')} <b>/ 15</b></span></div>
@@ -169,13 +225,38 @@ function routeBody() {
 }
 
 function render() {
-  app.innerHTML = `${header()}${routeBody()}${socialFooter()}`;
+  const focusedChoice = document.activeElement?.dataset?.choice;
+  app.innerHTML = `${header()}${routeBody()}${helpStrip()}${socialFooter()}`;
   document.title = window.location.pathname === '/about'
     ? 'عن حملة ثابت | ثابت على صحتك، ثابت على مستقبلك'
     : window.location.pathname === '/cards'
       ? 'بطاقات ثابت | ثابت على صحتك، ثابت على مستقبلك'
       : 'ثابت | ثابت على صحتك، ثابت على مستقبلك';
   bindMenu();
+  if (quiz.flipPending) {
+    const scene = document.querySelector('.flip-scene');
+    // نترك المتصفح يرسم الوجه الأمامي أولًا ثم نقلب البطاقة ليظهر الانقلاب فعلًا
+    scene?.getBoundingClientRect();
+    requestAnimationFrame(() => requestAnimationFrame(() => scene?.classList.add('is-flipped')));
+    quiz.flipPending = false;
+  } else if (focusedChoice !== undefined) {
+    document.querySelector(`[data-choice="${focusedChoice}"]`)?.focus();
+  }
+}
+
+function togglePillar(button) {
+  const opening = button.getAttribute('aria-expanded') !== 'true';
+  document.querySelectorAll('.pillar-toggle').forEach((other) => {
+    const isThis = other === button;
+    const open = isThis && opening;
+    other.setAttribute('aria-expanded', String(open));
+    other.closest('.pillar')?.classList.toggle('is-open', open);
+    document.getElementById(other.getAttribute('aria-controls')).hidden = !open;
+  });
+  if (opening) {
+    const panel = document.getElementById(button.getAttribute('aria-controls'));
+    requestAnimationFrame(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
+  }
 }
 
 function bindMenu() {
@@ -189,20 +270,25 @@ function bindMenu() {
 }
 
 function navigate(path) {
-  if (path === '/cards' && window.location.pathname !== '/cards') quiz = { index: 0, selected: null, answered: false, score: 0, answers: [] };
+  if (path === '/cards' && window.location.pathname !== '/cards') resetQuiz();
   history.pushState({}, '', path);
   render();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 app.addEventListener('click', (event) => {
+  const pillarToggle = event.target.closest('.pillar-toggle');
+  if (pillarToggle) {
+    togglePillar(pillarToggle);
+    return;
+  }
   const anchor = event.target.closest('a');
   if (anchor && anchor.origin === window.location.origin && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
     event.preventDefault();
     const path = anchor.pathname || '/';
     if (path !== window.location.pathname) navigate(path);
     else if (path === '/cards' && quiz.index >= cards.length) navigate('/cards');
-    else if (path === '/cards' && !quiz.answered && quiz.index === 0 && quiz.selected === null) { quiz = { index: 0, selected: null, answered: false, score: 0, answers: [] }; render(); }
+    else if (path === '/cards' && !quiz.answered && quiz.index === 0 && quiz.selected === null) { resetQuiz(); render(); }
     document.querySelector('.main-nav')?.classList.remove('is-open');
     document.querySelector('.menu-toggle')?.setAttribute('aria-expanded', 'false');
     return;
@@ -218,6 +304,7 @@ app.addEventListener('click', (event) => {
     quiz.answers[quiz.index] = quiz.selected;
     if (quiz.selected === cards[quiz.index].correctIndex) quiz.score += 1;
     quiz.answered = true;
+    quiz.flipPending = true;
     render();
     return;
   }
@@ -230,7 +317,7 @@ app.addEventListener('click', (event) => {
     return;
   }
   if (action === 'restart') {
-    quiz = { index: 0, selected: null, answered: false, score: 0, answers: [] };
+    resetQuiz();
     history.pushState({}, '', '/cards');
     render();
     window.scrollTo({ top: 0, behavior: 'smooth' });
